@@ -1,5 +1,5 @@
 -- lua function enable_oldindex can enable or disable metamethod __oldindex
-local enable_oldindex = enable_oldindex or (function() end)
+local enable_oldindex = _ENV.enable_oldindex or (function() end)
 
 local M = {}
 
@@ -21,7 +21,7 @@ M.CONTAINER_DATA_TYPES = {
 M.KEY_ATTRS = {
     ['__cls'] = true
 }
-local ERR_CHANGE_KEY_ATTRS = "can't modify key attrs"
+--local ERR_CHANGE_KEY_ATTRS = "can't modify key attrs"
 
 M.cls_ref_map = {} -- cls_name : [parent_name, ...]
 local cls_map = {} -- cls_name: cls
@@ -126,7 +126,7 @@ function M.parse_list(cls, data)
 
     local ret = {}
     local item_cls = cls.item
-    for _idx, _data in ipairs(data) do
+    for _, _data in ipairs(data) do
         table.insert(ret, item_cls:parse(_data))
     end
     return cls:new(ret)
@@ -141,7 +141,7 @@ function M.parse_map(cls, data)
         _cls_parse_error(cls, data, "is not table")
     end
 
-    local cls_name = cls.name
+    --local cls_name = cls.name
     local k_cls = cls.key
     local v_cls = cls.value
     local ret = {}
@@ -295,7 +295,7 @@ function M.struct_setfield(obj, k, v)
     if type(v) == 'table' and v.__cls ~= nil then
         if v_cls.id == v.__cls.id then
             -- print(
-            --     '-- struct trust cls obj', 
+            --     '-- struct trust cls obj',
             --     cls.name, k, v_cls.name, v.__cls
             -- )
             rawset(obj, k, v)
@@ -327,8 +327,8 @@ function M.list_setfield(obj, k, v)
 
     if k ~= math.tointeger(k) then
         local s = string.format(
-            'cls<%s> key<%s> data<%s> is not integer', 
-            cls.name, k, data
+            'cls<%s> key<%s> data<%s> is not integer',
+            cls.name, k, v
         )
         error(s)
     end
@@ -343,7 +343,7 @@ function M.list_setfield(obj, k, v)
     if type(v) == 'table' and v.__cls ~= nil then
         if v_cls.id == v.__cls.id then
             -- print(
-            --     '-- list trust cls obj', 
+            --     '-- list trust cls obj',
             --     cls.name, k, v_cls.name, v.__cls
             -- )
             rawset(obj, k, v)
@@ -364,7 +364,7 @@ function M.map_setfield(obj, k, v)
     -- assert(k ~= "__cls", ERR_CHANGE_KEY_ATTRS)
     local cls = obj.__cls
     if not cls then
-        error(string.format("no cls info<%s>", cls_name))
+        error(string.format("no cls info<%s>", cls.name))
     end
 
     local k_data = cls.key:parse(k)
@@ -378,7 +378,7 @@ function M.map_setfield(obj, k, v)
     if type(v) == 'table' and v.__cls ~= nil then
         if v_cls.id == v.__cls.id then
             -- print(
-            --     '-- map trust cls obj', 
+            --     '-- map trust cls obj',
             --     cls.name, k, v_cls.name, v.__cls
             -- )
             rawset(obj, k_data, v)

@@ -7,13 +7,13 @@ local Ct = lpeg.Ct
 local V = lpeg.V
 local Cc = lpeg.Cc
 local Cg = lpeg.Cg
-local Carg = lpeg.Carg
+--local Carg = lpeg.Carg
 
-local locale = lpeg.locale()
-local alpha = locale.alpha
-local alnum = locale.alnum
-local digit = locale.digit
-local space = locale.space
+--local locale = lpeg.locale()
+--local alpha = locale.alpha
+--local alnum = locale.alnum
+--local digit = locale.digit
+--local space = locale.space
 
 local line_infos = {}
 local function count_lines(_,pos, parser_state)
@@ -56,8 +56,8 @@ local function multipat(pat)
     return Ct(blank0 * (pat * blanks) ^ 0 * pat^0 * blank0)
 end
 
-local function namedpat(name, pat)
-    return Ct(Cg(Cc(name), "type") * Cg(pat))
+local function namedpat(_name, pat)
+    return Ct(Cg(Cc(_name), "type") * Cg(pat))
 end
 
 local typedef = P {
@@ -65,25 +65,25 @@ local typedef = P {
 
     FIELD = namedpat(
         "field",
-        (name * blanks * 
+        (name * blanks *
              (
                  namedpat(
                      "ref",
                      typename
-                 ) + 
-                     
+                 ) +
+
                      namedpat(
                          "list",
                          P"[" * typename * P"]"
-                     ) + 
+                     ) +
 
                      namedpat(
                          "map",
                          P"<" * typename * blank0 * "," * blank0 * typename * P">"
-                     ) + 
+                     ) +
 
                      namedpat(
-                         "struct", 
+                         "struct",
                          P"{" * multipat(V"FIELD") * P"}"
                      )
              )
@@ -91,7 +91,7 @@ local typedef = P {
     ),
 
     STRUCT = namedpat(
-        "struct", 
+        "struct",
         blank0 * name * blank0 * P"{" * multipat(V"FIELD") * P"}"
     ),
 
@@ -124,24 +124,24 @@ local function preprocess(filename, dir)
             text[_idx] = line
             line_infos[_idx] = {line = idx, file=path}
         else
-            local _idx = 0
+            local line_idx = 0
             include = dir .. "/" .. include
             for _line in io.lines(include) do
-                _idx = _idx + 1
-                local idx = #text+1
-                text[idx] = _line
-                line_infos[idx] = {line = _idx, file=include}
+                line_idx = line_idx + 1
+                local _idx = #text + 1
+                text[_idx] = _line
+                line_infos[_idx] = {line = line_idx, file=include}
             end
         end
     end
     return table.concat(text, "\n")
 end
 
-local keyword_field_type = {
-    boolean = true,
-    integer = true,
-    string = true,
-}
+--local keyword_field_type = {
+    --boolean = true,
+    --integer = true,
+    --string = true,
+--}
 
 local keyword_map = {
     boolean = true,
@@ -178,7 +178,7 @@ function convert.struct(obj)
         local field = {}
         if field_data_type == 'ref' then
             field.type = field_data[1]
-            
+
         elseif field_data_type == 'map' then
             field.type = 'map'
             field.key = {type = field_data[1]}
@@ -212,7 +212,7 @@ end
 
 function convert.list(obj)
     -- print('-- convert.list', obj[1])
-    local result = {}
+    --local result = {}
     local type_name = obj[1]
     if keyword_map[type_name] then
         error(string.format("type_name<%s> is keyword", type_name))
@@ -227,7 +227,7 @@ end
 
 function convert.map(obj)
     -- print('-- convert.map', obj[1])
-    local result = {}
+    --local result = {}
     local type_name = obj[1]
     if keyword_map[type_name] then
         error(string.format("type_name<%s> is keyword", type_name))
@@ -243,7 +243,7 @@ end
 
 local function parse(pattern, filename, dir)
     assert(type(filename) == "string")
-    local file_path = dir .. "/".. filename
+    --local file_path = dir .. "/".. filename
     local text = preprocess(filename, dir)
     local state = {file = filename, pos = 0, line = 1}
     -- print('text:', text)

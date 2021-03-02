@@ -9,7 +9,7 @@ M.print_table = (function()
     local pairs = pairs
     local tostring = tostring
     local next = next
-    
+
     return function(root)
         local cache = {  [root] = "." }
         local function _dump(t,space,name)
